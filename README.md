@@ -30,6 +30,8 @@ SBCL runs as a non-root user.
 - SBCL 2.1.0 (builds from source, with `--with-sb-unicode`, `--with-core-compression`, `--dynamic-space-size=4Gb`)
 - Quicklisp dists v.2020-12-20
 
+Change both by editing variables in `build-all.sh` if required.
+
 ##### ISSUES
 - A minor SWANK hiccup, to be ironed out.
 - `cl-dev:sbcl-swank` needs to be much lighter.
