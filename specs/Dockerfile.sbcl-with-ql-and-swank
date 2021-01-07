@@ -1,5 +1,4 @@
 FROM ubuntu:latest AS sbcl-build
-MAINTAINER Mikhail Zislis <mikhail.zislis@gmail.com>
 
 ARG QUICKLISP=https://beta.quicklisp.org/quicklisp.lisp
 ARG SBCL_VERSION
@@ -27,9 +26,6 @@ USER default
 WORKDIR /home/default
 
 RUN mkdir env
-
-# build latest SBCL
-#RUN git clone --depth 1 https://github.com/sbcl/sbcl
 
 RUN curl -L0 -o /home/default/sbcl-${SBCL_VERSION}-source.tar.bz2 ${SBCL_URL}
 
@@ -97,4 +93,4 @@ RUN sbcl --noinform --non-interactive --load /home/default/env/quicklisp.lisp --
 
 EXPOSE 4005
 
-ENTRYPOINT ["sbcl"]
+ENTRYPOINT ["sbcl", "--noinform"]

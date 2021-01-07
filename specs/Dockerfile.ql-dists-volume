@@ -1,7 +1,6 @@
 FROM sbcl:temporary AS source
-MAINTAINER Mikhail Zislis <mikhail.zislis@gmail.com>
 
-FROM alpine:latest
+FROM alpine:3.7
 
 # Add a default group
 RUN echo >>/etc/group "default:x:1000:"

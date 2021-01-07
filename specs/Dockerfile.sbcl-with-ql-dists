@@ -1,5 +1,4 @@
 FROM ubuntu:latest AS sbcl-build
-MAINTAINER Mikhail Zislis <mikhail.zislis@gmail.com>
 
 ARG QUICKLISP=https://beta.quicklisp.org/quicklisp.lisp
 ARG SBCL_VERSION

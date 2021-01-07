@@ -6,9 +6,9 @@ SBCL_VERSION="2.1.0"
 SBCL_DYNAMIC_MEMORY="4Gb" # not used rn
 QUICKLISP_VERSION="2020-12-20"
 
-build_sbcl_temporary="docker build -t sbcl:temporary --build-arg SBCL_VERSION=${SBCL_VERSION} --build-arg QUICKLISP_VERSION=${QUICKLISP_VERSION} -f ./specs/Dockerfile.sbcl-with-ql-dists ."
+build_sbcl_temporary="docker build --no-cache -t sbcl:temporary --build-arg SBCL_VERSION=${SBCL_VERSION} --build-arg QUICKLISP_VERSION=${QUICKLISP_VERSION} -f ./specs/Dockerfile.sbcl-with-ql-dists ."
 
-build_ql_dists="docker build -t cl-dev:ql-dists -f ./specs/Dockerfile.ql-dists-volume ."
+build_ql_dists="docker build --no-cache -t cl-dev:ql-dists -f ./specs/Dockerfile.ql-dists-volume ."
 
 build_sbcl_with_swank="docker build -t cl-dev:sbcl-swank --build-arg SBCL_VERSION=${SBCL_VERSION} --build-arg QUICKLISP_VERSION=${QUICKLISP_VERSION} -f ./specs/Dockerfile.sbcl-with-ql-and-swank ."
 

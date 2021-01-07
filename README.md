@@ -33,6 +33,7 @@ Change both by editing variables in `build-all.sh` if required.
 
 ##### ISSUES
 - A minor SWANK hiccup, to be ironed out.
-- `cl-dev:sbcl-swank` needs to be much lighter. Not much luck with Alpine so far.
+- `cl-dev:sbcl-swank` needs to be much lighter.
 - `cl-dev:ql-dists` comes in at almost 2Gb. This is by design.
+- Currently Dockerfiles are based on ubuntu:latest, worst practices in action.
 - Does this need a docker-compose.yml?
