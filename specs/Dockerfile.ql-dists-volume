@@ -1,4 +1,5 @@
 FROM sbcl:temporary AS source
+MAINTAINER Mikhail Zislis <mikhail.zislis@gmail.com>
 
 FROM alpine:latest
 
