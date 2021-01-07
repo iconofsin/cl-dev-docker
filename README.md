@@ -19,14 +19,11 @@ In this case, Quicklisp will download packages over the Internet.
 ##### SBCL+SWANK+Local Quicklisp
 To force Quicklisp into using the local copy of the repository stored in `cl-dev:ql-dists`:
 ```
-docker run cl-dev:ql-dists
-docker run -it --rm --volumes-from [festive_chatterjee] --expose 4005 cl-dev:sbcl-swank
+docker run --detach --name quicklisp_repo cl-dev:ql-dists
+docker run -it --rm --volumes-from quicklisp_repo --expose 4005 cl-dev:sbcl-swank
 ```
-where `[festive_chatterjee]` is the ID of the container running `cl-dev:ql-dists`.
 
 SBCL runs as a non-root user.
-
-And, you might want to detach `cl-dev:ql-dists`.
 
 ##### PACKAGE VERSIONS
 - SBCL 2.1.0 (builds from source, with `--with-sb-unicode`, `--with-core-compression`, `--dynamic-space-size=4Gb`)

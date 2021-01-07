@@ -61,8 +61,6 @@ RUN mkdir -p /home/default && chown default:default /home/default
 # Adjust /tmp permissions
 RUN chmod 1777 /tmp
 
-RUN apt-get update && apt-get install -y vim
-
 USER default
 
 RUN mkdir /home/default/env
