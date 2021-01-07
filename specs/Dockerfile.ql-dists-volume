@@ -1,0 +1,22 @@
+FROM sbcl:temporary AS source
+
+FROM ubuntu:latest
+
+# Add a default group
+RUN echo >>/etc/group "default:x:1000:"
+
+# Add a default user
+RUN echo >>/etc/passwd "default:x:1000:1000:Default non-root user:/home/default:/bin/sh"
+
+# Create home directory for the default user
+RUN mkdir -p /home/default && chown default:default /home/default
+
+USER default
+
+RUN mkdir -p /home/default/quicklisp/dists
+
+COPY --from=source /home/default/quicklisp/dists /home/default/quicklisp/dists
+
+VOLUME /home/default/quicklisp/dists
+
+ENTRYPOINT /usr/bin/tail -f /dev/null

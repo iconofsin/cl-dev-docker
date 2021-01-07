@@ -1,0 +1,99 @@
+FROM ubuntu:latest AS sbcl-build
+MAINTAINER Mikhail Zislis <mikhail.zislis@gmail.com>
+
+ARG QUICKLISP=https://beta.quicklisp.org/quicklisp.lisp
+ARG SBCL_VERSION
+ARG SBCL_URL=https://downloads.sourceforge.net/project/sbcl/sbcl/${SBCL_VERSION}/sbcl-${SBCL_VERSION}-source.tar.bz2
+
+# install SBCL build dependencies
+RUN apt-get update
+
+RUN apt-get install -y sbcl git make gcc zlib1g-dev linux-headers-generic ed curl
+
+# Add a default group
+RUN echo >>/etc/group "default:x:1000:"
+
+# Add a default user
+RUN echo >>/etc/passwd "default:x:1000:1000:Default non-root user:/home/default:/bin/sh"
+
+# Create home directory for the default user
+RUN mkdir -p /home/default && chown default:default /home/default
+
+# Adjust /tmp permissions
+RUN chmod 1777 /tmp
+
+USER default
+
+WORKDIR /home/default
+
+RUN mkdir env
+
+RUN curl -L0 -o /home/default/sbcl-${SBCL_VERSION}-source.tar.bz2 ${SBCL_URL}
+
+RUN tar -xjf sbcl-${SBCL_VERSION}-source.tar.bz2
+
+RUN rm /home/default/sbcl-${SBCL_VERSION}-source.tar.bz2
+
+WORKDIR /home/default/sbcl-${SBCL_VERSION}
+
+#RUN echo '"${SBCL_VERSION}"' > version.lisp-expr
+
+RUN /bin/sh make.sh --prefix=/home/default/env --dynamic-space-size=4Gb --with-sb-unicode --with-sb-core-compression
+
+RUN /bin/sh install.sh
+
+RUN curl -o /home/default/env/quicklisp.lisp ${QUICKLISP}
+
+
+
+FROM ubuntu:latest AS sbcl-developer
+
+ARG QUICKLISP_VERSION
+ARG QUICKLISP_DISTINFO=http://beta.quicklisp.org/dist/quicklisp/${QUICKLISP_VERSION}/distinfo.txt
+
+# Add a default group
+RUN echo >>/etc/group "default:x:1000:"
+
+# Add a default user
+RUN echo >>/etc/passwd "default:x:1000:1000:Default non-root user:/home/default:/bin/sh"
+
+# Create home directory for the default user
+RUN mkdir -p /home/default && chown default:default /home/default
+
+# Adjust /tmp permissions
+RUN chmod 1777 /tmp
+
+RUN apt-get update && apt-get install -y vim
+
+USER default
+
+RUN mkdir /home/default/env
+
+COPY ./mirror-ql-dist.lisp /home/default/env
+
+RUN cp /home/default/env/mirror-ql-dist.lisp /home/default/env/mirror-ql-default.lisp
+
+COPY --from=sbcl-build /home/default/env /home/default/env
+
+ENV PATH="/home/default/env/bin:${PATH}"
+
+ENV LD_LIBRARY_PATH="/home/default/env/lib:${LD_LIBRARY_PATH}"
+
+RUN chmod +x /home/default/env/bin/sbcl
+
+RUN sbcl --noinform --non-interactive --load /home/default/env/quicklisp.lisp --eval \
+        "(quicklisp-quickstart:install :dist-url \"${QUICKLISP_DISTINFO}\")" && \
+    sbcl --noinform --non-interactive --load ~/quicklisp/setup.lisp --eval \
+        '(ql-util:without-prompting (ql:add-to-init-file))' && \
+    sbcl --noinform --non-interactive --load ~/quicklisp/setup.lisp --eval \
+        '(ql:quickload "swank")' && \
+    echo '#+quicklisp(push "/src" ql:*local-project-directories*)' >> ~/.sbclrc && \
+    echo '#+quicklisp(ql:quickload "swank")' >> ~/.sbclrc && \
+    echo '#+swank(let ((swank::*loopback-interface* "0.0.0.0"))' >> ~/.sbclrc && \
+    echo '          (swank:create-server :port 4005 :style :spawn :dont-close t))' >> ~/.sbclrc && \
+    echo '(setf swank::*use-dedicated-output-stream* nil)' >> ~/.sbclrc && \
+    rm -f /home/default/env/quicklisp.lisp
+
+RUN sbcl --script /home/default/env/mirror-ql-default.lisp
+
+ENTRYPOINT ["/bin/bash"]
