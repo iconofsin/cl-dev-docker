@@ -36,8 +36,6 @@ RUN rm /home/default/sbcl-${SBCL_VERSION}-source.tar.bz2
 
 WORKDIR /home/default/sbcl-${SBCL_VERSION}
 
-#RUN echo '"${SBCL_VERSION}"' > version.lisp-expr
-
 RUN /bin/sh make.sh --prefix=/home/default/env --dynamic-space-size=4Gb --with-sb-unicode --with-sb-core-compression
 
 RUN /bin/sh install.sh

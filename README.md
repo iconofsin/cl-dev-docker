@@ -12,7 +12,7 @@ Running `/bin/bash ./build-all.sh` builds two images:
 ##### SBCL+SWANK+Quicklisp
 You should be able to run `cl-dev:sbcl-swank` solo, like so:
 ```
-docker run -it --rm --expose 4005:4005 cl-dev:sbcl-swank
+docker run -it --rm --expose 4005 cl-dev:sbcl-swank
 ```
 In this case, Quicklisp will download packages over the Internet.
 
@@ -20,11 +20,13 @@ In this case, Quicklisp will download packages over the Internet.
 To force Quicklisp into using the local copy of the repository stored in `cl-dev:ql-dists`:
 ```
 docker run cl-dev:ql-dists
-docker run -it --rm --volumes-from [festive_chatterjee] --expose 4005:4005 cl-dev:sbcl-swank
+docker run -it --rm --volumes-from [festive_chatterjee] --expose 4005 cl-dev:sbcl-swank
 ```
 where `[festive_chatterjee]` is the ID of the container running `cl-dev:ql-dists`.
 
 SBCL runs as a non-root user.
+
+And, you might want to detach `cl-dev:ql-dists`.
 
 ##### PACKAGE VERSIONS
 - SBCL 2.1.0 (builds from source, with `--with-sb-unicode`, `--with-core-compression`, `--dynamic-space-size=4Gb`)
@@ -34,6 +36,6 @@ Change both by editing variables in `build-all.sh` if required.
 
 ##### ISSUES
 - A minor SWANK hiccup, to be ironed out.
-- `cl-dev:sbcl-swank` needs to be much lighter.
-- `cl-dev:ql-dists` comes in at 2Gb.  Will change base to Alpine to shave some 70mb.
+- `cl-dev:sbcl-swank` needs to be much lighter. Not much luck with Alpine so far.
+- `cl-dev:ql-dists` comes in at almost 2Gb. This is by design.
 - Does this need a docker-compose.yml?
