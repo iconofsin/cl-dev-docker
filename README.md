@@ -26,7 +26,7 @@ docker run -it --rm --volumes-from quicklisp_repo --expose 4005 cl-dev:sbcl-swan
 SBCL runs as a non-root user.
 
 ##### PACKAGE VERSIONS
-- SBCL 2.1.0 (builds from source, with `--with-sb-unicode`, `--with-core-compression`, `--dynamic-space-size=4Gb`)
+- SBCL 2.1.0 (builds from source, with `--with-sb-unicode`, `--with-core-compression`, `--dynamic-space-size=4Gb`, `--with-sb-linkable-runtime`)
 - Quicklisp dists v.2020-12-20
 
 Change both by editing variables in `build-all.sh` if required.
