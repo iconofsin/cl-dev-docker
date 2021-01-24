@@ -1,0 +1,63 @@
+FROM alpine:3.13.0 AS sbcl-image-builder
+
+RUN apk add --no-cache sbcl
+
+RUN echo >>/etc/group "default:x:1000:"
+RUN echo >>/etc/passwd "default:x:1000:1000:Default non-root user:/home/default:/bin/sh"
+RUN mkdir -p /home/default && chown default:default /home/default
+RUN chmod 1777 /tmp
+
+USER default
+
+WORKDIR /home/default
+
+RUN wget https://beta.quicklisp.org/quicklisp.lisp
+
+RUN sbcl --eval '(progn (require "asdf") \
+    (require "sb-bsd-sockets") \
+    (require "sb-cltl2") \
+    (require "sb-concurrency") \
+    (require "sb-cover") \
+    (require "sb-grovel") \
+    (require "sb-introspect") \
+    (require "sb-md5") \
+    (require "sb-posix") \
+    (require "sb-queue") \
+    (require "sb-rt") \
+    (require "sb-simple-streams") \
+    (require "sb-sprof") \
+    (require "uiop") \
+    (sb-ext:save-lisp-and-die "sbcl" :compression 9 :executable t))'
+
+FROM alpine:3.13.0 AS alpinist
+
+ARG QUICKLISP_VERSION=2020-12-20
+ARG QUICKLISP_DISTINFO=http://beta.quicklisp.org/dist/quicklisp/${QUICKLISP_VERSION}/distinfo.txt
+
+RUN echo >>/etc/group "default:x:1000:"
+RUN echo >>/etc/passwd "default:x:1000:1000:Default non-root user:/home/default:/bin/sh"
+RUN mkdir -p /home/default && chown default:default /home/default
+RUN chmod 1777 /tmp
+
+USER default
+
+WORKDIR /home/default
+
+COPY --from=sbcl-image-builder /home/default/sbcl /usr/bin
+COPY --from=sbcl-image-builder /home/default/quicklisp.lisp /home/default/
+
+RUN sbcl --noinform --non-interactive --load /home/default/quicklisp.lisp --eval \
+        "(quicklisp-quickstart:install :dist-url \"${QUICKLISP_DISTINFO}\")" && \
+    sbcl --noinform --non-interactive --load /home/default/quicklisp/setup.lisp --eval \
+        '(ql-util:without-prompting (ql:add-to-init-file))' && \
+    sbcl --noinform --non-interactive --load /home/default/quicklisp/setup.lisp --eval \
+        '(ql:quickload "swank")' && \
+    echo '#+quicklisp(push "/src" ql:*local-project-directories*)' >> /home/default/.sbclrc && \
+    echo '#+quicklisp(ql:quickload "swank")' >> /home/default/.sbclrc && \
+    echo '#+swank(let ((swank::*loopback-interface* "0.0.0.0"))' >> ~/.sbclrc && \
+    echo '          (swank:create-server :port 4005 :style :spawn :dont-close t))' >> /home/default/.sbclrc && \
+    rm -f /home/default/quicklisp.lisp
+
+EXPOSE 4005
+
+ENTRYPOINT ["sbcl", "--noinform"]
